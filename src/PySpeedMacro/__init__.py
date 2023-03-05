@@ -33,5 +33,5 @@ PySpeedMacro provides, but is not limited to:
 __author__ = "BaneofRogue"
 __version__ = "0.0.1"
 
-import PSMMouse
-import PSMMain
+from PySpeedMacro.PSMMouse import *
+from PySpeedMacro.PSMMain import *
