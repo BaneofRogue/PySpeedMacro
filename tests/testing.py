@@ -1,4 +1,4 @@
-from PySpeedMacro import PSMMouse
+import PySpeedMacro
 import keyboard
 import time
 

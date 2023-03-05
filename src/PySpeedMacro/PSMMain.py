@@ -11,9 +11,9 @@ from PIL import ImageGrab
 import math
 import ctypes
 import logging
-import PySpeedMacroMouse
+import PSMMouse
 
-wm = PySpeedMacroMouse.WinMouse()
+wm = PSMMouse.WinMouse()
 
 speedZeroException = "Value must not be 0. If you are trying to move the mouse instantly, use direct = True"
 imageNotFoundException = "Image not found on screen or region."
