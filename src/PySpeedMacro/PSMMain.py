@@ -1,8 +1,4 @@
-﻿
-
-
-
-import cv2
+﻿import cv2
 import numpy as np
 import os
 import win32api, win32con
@@ -11,9 +7,9 @@ from PIL import ImageGrab
 import math
 import ctypes
 import logging
-import PSMMouse
+from PySpeedMacro.PSMMouse import WinMouse
 
-wm = PSMMouse.WinMouse()
+wm = WinMouse()
 
 speedZeroException = "Value must not be 0. If you are trying to move the mouse instantly, use direct = True"
 imageNotFoundException = "Image not found on screen or region."
