@@ -1,13 +1,14 @@
 ﻿import cv2
 import numpy as np
 import os
-import win32api, win32con
+import win32api, win32con, win32gui
 import time
 from PIL import ImageGrab
 import math
 import ctypes
 import logging
 from PySpeedMacro.PSMMouse import WinMouse
+import colorsys
 
 wm = WinMouse()
 
@@ -88,7 +89,10 @@ def Screenshot(region=None):
         bottom = top + size_y
         screen = ImageGrab.grab(bbox=(left, top, right, bottom))
         #print(f"start at {left}, {top}. ends at: {right}, {bottom}")
+
     else:
+
+
         screen = ImageGrab.grab()
 
     return np.array(screen)
@@ -138,32 +142,6 @@ def getMousePosition():
 def click(button = "left", separation = 0.1):
 
     wm.click(button, separation)
-
-"""
-def move_in_square(x, y, w, h, speed):
-
-    top_left = (int(x - w/2), int(y - h/2))
-    top_right = (int(x + w/2), int(y - h/2))
-    bottom_left = (int(x - w/2), int(y + h/2))
-    bottom_right = (int(x + w/2), int(y + h/2))
-    distance = w + h
-
-    start_time = time.time()
-    while time.time() - start_time < speed:
-        for t in range(0, 101, 1):
-            p1 = (lerp(top_left[0], top_right[0], t/100), lerp(top_left[1], top_right[1], t/100))
-            p2 = (lerp(top_right[0], bottom_right[0], t/100), lerp(top_right[1], bottom_right[1], t/100))
-            p3 = (lerp(bottom_right[0], bottom_left[0], t/100), lerp(bottom_right[1], bottom_left[1], t/100))
-            p4 = (lerp(bottom_left[0], top_left[0], t/100), lerp(bottom_left[1], top_left[1], t/100))
-            win32api.SetCursorPos((int(p1[0]), int(p1[1])))
-            accurate_delay(speed/4)
-            win32api.SetCursorPos((int(p2[0]), int(p2[1])))
-            accurate_delay(speed/4)
-            win32api.SetCursorPos((int(p3[0]), int(p3[1])))
-            accurate_delay(speed/4)
-            win32api.SetCursorPos((int(p4[0]), int(p4[1])))
-            accurate_delay(speed/4)
-"""
 
 
 def multiClick(button = "left", count = 2, separation = 0.1):
@@ -333,7 +311,7 @@ def returnMouse(function=None, direct = False, speed = 0.1):
 #
 #
 
-def LocateOnScreen(path, confidence=1, directory='.', region=None, grayscale=False):
+def locateOnScreen(path, confidence=1, directory='.', region=None, grayscale=False):
 
     """
 
@@ -401,7 +379,7 @@ def LocateOnScreen(path, confidence=1, directory='.', region=None, grayscale=Fal
         return None
 
 
-def LocateCenter(path, confidence=1, directory='.', region=None, grayscale=False):
+def locateCenter(path, confidence=1, directory='.', region=None, grayscale=False):
 
     """
 
@@ -466,7 +444,7 @@ def LocateCenter(path, confidence=1, directory='.', region=None, grayscale=False
         return None
 
 
-def LocateAndMove(path, confidence=1, directory='.', region=None, grayscale=False, direct=True, speed=1):
+def locateAndMove(path, confidence=1, directory='.', region=None, grayscale=False, direct=True, speed=1):
 
     """
     Description: By far the most handy Image Search function! Locates an image and moves the mouse to the center of the first found image.
@@ -543,28 +521,51 @@ def LocateAndMove(path, confidence=1, directory='.', region=None, grayscale=Fals
         print(e)
         return None
 
+
 def getPixel(x, y):
-    # Get a screenshot of the screen
+
     im = ImageGrab.grab()
 
-    # Get the RGB values of the pixel at (x, y)
     r, g, b = im.getpixel((x, y))
 
-    # Return the RGB values as a tuple
     return (r, g, b)
 
-def getPixel2(x, y):
-    # Calculate the coordinates of the region to capture
-    x1 = x - (10 // 2)
-    y1 = y - (10 // 2)
-    x2 = x1 + 10
-    y2 = y1 + 10
 
-    # Get a screenshot of the region
-    im = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+@timer
+def getHue(region):
 
-    # Get the RGB values of the center pixel
-    r, g, b = im.getpixel((5, 5))
+    screen = Screenshot(region)
 
-    # Return the RGB values as a tuple
-    return (r, g, b)
+    pixels = np.array(screen)
+    total_r, total_g, total_b = 0, 0, 0
+    for y in range(pixels.shape[0]):
+        for x in range(pixels.shape[1]):
+            pixel = pixels[y, x]
+            total_r += pixel[0]
+            total_g += pixel[1]
+            total_b += pixel[2]
+    pixel_count = pixels.shape[0] * pixels.shape[1]
+    avg_r = total_r // pixel_count
+    avg_g = total_g // pixel_count
+    avg_b = total_b // pixel_count
+    # Calculate the difference between the average color and the grayscale value
+    gray = (avg_r + avg_g + avg_b) // 3
+    delta_gray = abs(avg_r - gray) + abs(avg_g - gray) + abs(avg_b - gray)
+    # Return the "hue" value as a percentage of the maximum possible value (255*3)
+    return delta_gray / (255 * 3)
+
+
+def setWindow(name):
+    # Get the window handle for the specified window name
+    handle = win32gui.FindWindow(None, name)
+
+    # Check if a window handle was found
+    if handle == 0:
+        print(f"No window found with name '{name}'")
+        return
+
+    # Set the current active window to the specified window
+    ctypes.windll.user32.SetForegroundWindow(handle)
+    win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+
+    print(f"Window '{name}' activated")
