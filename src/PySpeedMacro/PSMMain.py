@@ -409,12 +409,10 @@ def locateCenter(path, confidence=1, directory='.', region=None, grayscale=False
         image = cv2.imread(fullPath)
 
         if grayscale:
-
             screen = cv2.cvtColor(screen, cv2.COLOR_RGB2GRAY)
             image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
         else:
-
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         result = cv2.matchTemplate(screen, image, cv2.TM_CCOEFF_NORMED)
